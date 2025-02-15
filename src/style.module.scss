@@ -1,0 +1,38 @@
+.wrapper {
+  width: 100vw;
+  height: 100vh;
+  min-width: 1200px;
+
+  :global {
+    .layer-ui__wrapper__top-right, .App-menu_top__left {
+      visibility: hidden !important;
+
+      & > * {
+        display: none;
+      }
+    }
+
+    .ToolIcon.Shape {
+      &[title~="Diamond"],
+      &[title~="Ellipse"],
+      &[title~="Arrow"],
+      &[title~="Line"],
+      &[title~="Draw"],
+      &[title~="Text"],
+      &[title~="Insert"],
+      &[title~="Eraser"],
+      {
+        display: none !important;
+      }
+
+      &[title~="Eraser"] + .App-toolbar__divider {
+        display: none !important;
+      }
+
+      &[title~="Eraser"] + .App-toolbar__divider + button {
+        display: none !important;
+      }
+    }
+  }
+}
+

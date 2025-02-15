@@ -1,0 +1,26 @@
+$margin: 16px;
+
+.wrapper {
+  position: fixed;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  top: $margin;
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 101;
+  width: fit-content;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  @media (prefers-color-scheme: dark) {
+    background-color: black;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  }
+
+  &.left {
+    left: $margin;
+  }
+
+  &.right {
+    right: $margin;
+  }
+}
