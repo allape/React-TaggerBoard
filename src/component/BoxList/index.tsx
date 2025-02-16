@@ -1,9 +1,10 @@
 import { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/types/element/types";
 import { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types/types";
-import { Button, Empty } from "antd";
+import { Button, Divider, Empty, Input } from "antd";
 import { ReactElement, useCallback, useEffect, useState } from "react";
 import { ImageID } from "../../config";
 import { ILV } from "../../config/antd.ts";
+import { randomColor } from "../../helper/color.ts";
 import BoxForm, { IBox } from "../BoxForm";
 import FloatList from "../FloatList";
 import styles from "./style.module.scss";
@@ -11,16 +12,37 @@ import styles from "./style.module.scss";
 export interface IBoxListProps {
   api?: ExcalidrawImperativeAPI;
   options: ILV<IBox["label"]>[];
+  onReport?: (boxes: IBox[]) => void;
 }
 
-export default function BoxList({ api, options }: IBoxListProps): ReactElement {
+export default function BoxList({
+  api,
+  options,
+  onReport,
+}: IBoxListProps): ReactElement {
+  const [strokeColor, _setStrokeColor] = useState<string>("#000000");
   const [boxes, setBoxes] = useState<IBox[]>([]);
+
+  const setStrokeColor = useCallback(
+    (color: string) => {
+      _setStrokeColor(color);
+      if (api && api.getAppState().currentItemStrokeColor !== color) {
+        api.updateScene({
+          appState: {
+            currentItemStrokeColor: color,
+          },
+        });
+      }
+    },
+    [api],
+  );
 
   const handleChange = useCallback(
     (id: ExcalidrawRectangleElement["id"], value: IBox) => {
       if (!api) {
         return;
       }
+
       const elements = api.getSceneElements();
       api.updateScene({
         elements: elements.map((element) => {
@@ -31,6 +53,7 @@ export default function BoxList({ api, options }: IBoxListProps): ReactElement {
                 ...element.customData,
                 label: value.label,
               },
+              strokeColor: value.strokeColor,
               x: value.x,
               y: value.y,
               width: value.width,
@@ -44,19 +67,22 @@ export default function BoxList({ api, options }: IBoxListProps): ReactElement {
     [api],
   );
 
-  const handleNormalize = useCallback(() => {
+  const handleNormalize = useCallback((): IBox[] => {
     if (!api) {
-      return;
+      return [];
     }
 
     const elements = api.getSceneElements();
 
     const image = elements.find((i) => i.id === ImageID);
     if (!image) {
-      return;
+      return [];
     }
 
-    const newElements = elements
+    const boxElements = elements.filter((i) => i.type === "rectangle");
+    const nonBoxElements = elements.filter((i) => i.type !== "rectangle");
+
+    const newBoxElements = boxElements
       .filter((element) => {
         let overWidth = false;
         if (element.x < 0) {
@@ -116,15 +142,23 @@ export default function BoxList({ api, options }: IBoxListProps): ReactElement {
       })
       .filter((element) => element.width > 0 && element.height > 0);
 
-    console.log(
-      newElements
-        .filter((i) => i.type === "rectangle")
-        .map((i) => [i.customData?.label, i.x, i.y, i.width, i.height]),
-    );
+    const boxes: IBox[] = newBoxElements
+      .filter((i) => i.type === "rectangle")
+      .map((i) => ({
+        id: i.id,
+        label: i.customData?.label || "",
+        strokeColor: i.strokeColor,
+        x: i.x,
+        y: i.y,
+        width: i.width,
+        height: i.height,
+      }));
 
     api.updateScene({
-      elements: newElements,
+      elements: [...nonBoxElements, ...newBoxElements],
     });
+
+    return boxes;
   }, [api]);
 
   const handleFocus = useCallback(
@@ -159,31 +193,60 @@ export default function BoxList({ api, options }: IBoxListProps): ReactElement {
       return;
     }
 
-    const dispose = api.onChange((elements) => {
-      console.log(elements);
-      setBoxes(
-        elements
-          .filter((i) => i.type === "rectangle" && !i.isDeleted)
-          .map((element) => {
-            return {
-              id: element.id,
-              label: element.customData?.label || "",
-              x: element.x,
-              y: element.y,
-              width: element.width,
-              height: element.height,
-            };
-          }),
-      );
+    let lastBoxesCount = 0;
+
+    const dispose = api.onChange((elements, appState) => {
+      const boxes: IBox[] = elements
+        .filter((i) => i.type === "rectangle" && !i.isDeleted)
+        .map((element) => {
+          return {
+            id: element.id,
+            label: element.customData?.label || "",
+            strokeColor: element.strokeColor,
+            x: element.x,
+            y: element.y,
+            width: element.width,
+            height: element.height,
+          };
+        });
+
+      if (lastBoxesCount !== boxes.length) {
+        lastBoxesCount = boxes.length;
+        setStrokeColor(randomColor());
+      } else {
+        setStrokeColor(appState.currentItemStrokeColor);
+      }
+
+      setBoxes(boxes);
     });
 
     return () => {
       dispose();
     };
-  }, [api]);
+  }, [api, setStrokeColor]);
+
+  const handleReport = useCallback(() => {
+    const boxes = handleNormalize();
+    onReport?.(boxes);
+  }, [handleNormalize, onReport]);
 
   return (
     <FloatList className={styles.wrapper} position="right">
+      <div className={styles.flex}>
+        <Input
+          className={styles.colorPicker}
+          type="color"
+          value={strokeColor}
+          onChange={(e) => setStrokeColor(e.target.value)}
+        />
+        <Button onClick={handleNormalize} disabled={boxes.length === 0}>
+          Normalize
+        </Button>
+        <Button type="primary" onClick={handleReport}>
+          Report
+        </Button>
+      </div>
+      <Divider type="horizontal" />
       {boxes.length === 0 ? (
         <Empty description="No box has been drawn" />
       ) : undefined}
@@ -201,13 +264,6 @@ export default function BoxList({ api, options }: IBoxListProps): ReactElement {
           </div>
         );
       })}
-      {boxes.length > 0 ? (
-        <div className={styles.flex}>
-          <Button type="primary" onClick={handleNormalize}>
-            Normalize
-          </Button>
-        </div>
-      ) : undefined}
     </FloatList>
   );
 }

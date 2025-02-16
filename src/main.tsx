@@ -2,14 +2,15 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.scss";
 import App from "./App.tsx";
+import Image1 from "./asset/girl-5014099_1920.jpg";
+import Image2 from "./asset/girl-7357492_1920.jpg";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App
-      urls={[
-        "http://127.0.0.1:8080/IMG_0421.jpeg",
-        "http://127.0.0.1:8080/miyu.png",
-      ]}
+      style={{ width: "100vw", height: "100vh" }}
+      urls={[Image1, Image2]}
+      onReport={(url, boxes) => console.log(url, boxes)}
     />
   </StrictMode>,
 );

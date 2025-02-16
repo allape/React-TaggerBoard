@@ -1,6 +1,8 @@
 .wrapper {
   .box {
-    margin-bottom: 10px;
+    &:not(:first-child) {
+      margin-top: 10px;
+    }
   }
 
   .flex {
@@ -8,5 +10,9 @@
     justify-content: center;
     align-items: center;
     gap: 10px;
+  }
+
+  .colorPicker {
+    width: 80px;
   }
 }

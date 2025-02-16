@@ -1,11 +1,13 @@
 import { DeleteOutlined } from "@ant-design/icons";
-import { Button, InputNumber, Select, Space } from "antd";
+import { Button, Input, InputNumber, Select, Space } from "antd";
 import { ReactElement } from "react";
 import { ILV } from "../../config/antd.ts";
+import styles from "./style.module.scss";
 
 export interface IBox {
   id: string;
   label: string;
+  strokeColor: string;
   x: number;
   y: number;
   width: number;
@@ -15,6 +17,7 @@ export interface IBox {
 const Default: IBox = {
   id: "",
   label: "",
+  strokeColor: "",
   x: 0,
   y: 0,
   width: 0,
@@ -34,14 +37,15 @@ export default function BoxForm({
   value,
   onChange,
   onFocus,
-                                  onDelete,
+  onDelete,
 }: IBoxFormProps): ReactElement {
-  const { id, label, x, y, width, height } = value || Default;
+  const { id, label, strokeColor, x, y, width, height } = value || Default;
 
   const handleChange = (field: keyof IBox, value: unknown) => {
     onChange?.({
       id,
       label,
+      strokeColor,
       x,
       y,
       width,
@@ -51,13 +55,19 @@ export default function BoxForm({
   };
 
   return (
-    <div>
+    <div className={styles.wrapper}>
       <Space.Compact data-id={id}>
         <Select
           value={label}
-          style={{ width: "100px" }}
+          className={styles.input}
           options={options}
           onChange={(e) => handleChange("label", e)}
+        />
+        <Input
+          type="color"
+          className={styles.input}
+          value={strokeColor}
+          onChange={(e) => handleChange("strokeColor", e.target.value)}
         />
         <InputNumber
           value={x}

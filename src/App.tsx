@@ -9,14 +9,23 @@ import {
   ExcalidrawImperativeAPI,
 } from "@excalidraw/excalidraw/types/types";
 import { Spin } from "antd";
-import { ReactElement, useCallback, useEffect, useState } from "react";
+import cls from "classnames";
+import {
+  CSSProperties,
+  ReactElement,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+import { IBox } from "./component/BoxForm";
 import BoxList from "./component/BoxList";
 import ImageQueue from "./component/ImageQueue";
 import { BorderID, ImageID } from "./config";
 import { ILV } from "./config/antd.ts";
+import { randomColor } from "./helper/color.ts";
 import { sha256ToHex } from "./helper/sha256.ts";
 import useColorScheme from "./hook/useColorScheme.ts";
-import { getSize } from "./image.ts";
+import { getSize } from "./helper/image.ts";
 import styles from "./style.module.scss";
 
 const OPTIONS: ILV<string>[] = [
@@ -27,15 +36,25 @@ const OPTIONS: ILV<string>[] = [
 ];
 
 export interface IAppProps {
+  className?: string;
+  style?: CSSProperties;
   urls?: string[];
+  onReport?: (url: string, boxes: IBox[]) => Promise<void> | void;
 }
 
-export default function App({ urls: urlsFromProps }: IAppProps): ReactElement {
+export default function App({
+  className,
+  style,
+  urls: urlsFromProps,
+  onReport,
+}: IAppProps): ReactElement {
   const { loading, execute } = useLoading();
   const isDark = useColorScheme();
 
-  const [urls, setUrls] = useState<string[]>([]);
-  const [url, setUrl] = useState<string | undefined>();
+  const [wrapper, setWrapper] = useState<HTMLDivElement | null>(null);
+
+  const [urls, urlsRef, setUrls] = useProxy<string[]>([]);
+  const [url, urlRef, setUrl] = useProxy<string | undefined>(undefined);
   const [api, apiRef, setApi] = useProxy<ExcalidrawImperativeAPI | undefined>(
     undefined,
   );
@@ -122,15 +141,25 @@ export default function App({ urls: urlsFromProps }: IAppProps): ReactElement {
           },
         );
 
+        let strokeWidth = (width > height ? height : width) * 0.01;
+        strokeWidth = strokeWidth < 2 ? 2 : strokeWidth;
+        strokeWidth = strokeWidth > 10 ? 10 : strokeWidth;
+
         api.updateScene({
           elements,
           appState: {
             currentItemRoughness: 0,
-            currentItemStrokeWidth: 10,
-            currentItemStrokeColor: "#f00",
+            currentItemStrokeWidth: strokeWidth,
+            currentItemStrokeColor: randomColor(),
             currentItemRoundness: "sharp",
           },
         });
+
+        api.setActiveTool({
+          ...api.getAppState().activeTool,
+          locked: true,
+        });
+
         api.scrollToContent();
       });
     },
@@ -141,7 +170,7 @@ export default function App({ urls: urlsFromProps }: IAppProps): ReactElement {
     const set = Array.from(new Set(urlsFromProps || []));
     setUrls(set);
     setUrl(set[0]);
-  }, [urlsFromProps]);
+  }, [setUrl, setUrls, urlsFromProps]);
 
   useEffect(() => {
     if (!api) return;
@@ -155,13 +184,13 @@ export default function App({ urls: urlsFromProps }: IAppProps): ReactElement {
   }, [api, putImageIntoBoard, url]);
 
   useEffect(() => {
-    if (!api) {
+    if (!api || !wrapper) {
       return;
     }
     const handleResize = () => {
-      if (window.innerWidth < 1200) {
+      if (wrapper.clientWidth < 800) {
         api.setToast({
-          message: "The screen is too small, please use a larger screen",
+          message: "The content width is too small, please set it wider.",
           closable: true,
         });
       } else {
@@ -172,18 +201,38 @@ export default function App({ urls: urlsFromProps }: IAppProps): ReactElement {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [api]);
+  }, [api, wrapper]);
+
+  const handleReport = useCallback(
+    (boxes: IBox[]) => {
+      const url = urlRef.current;
+      if (!url) {
+        return;
+      }
+      execute(async () => {
+        await onReport?.(url, boxes);
+        const urls = urlsRef.current.filter((u) => u !== url);
+        setUrls(urls);
+        setUrl(urls[0]);
+      }).then();
+    },
+    [execute, onReport, setUrl, setUrls, urlRef, urlsRef],
+  );
 
   return (
     <Spin spinning={loading}>
-      <div className={styles.wrapper}>
+      <div
+        ref={setWrapper}
+        className={cls(styles.wrapper, className)}
+        style={style}
+      >
         <Excalidraw
           excalidrawAPI={setApi}
           theme={isDark ? "dark" : "light"}
           zenModeEnabled
         />
         <ImageQueue urls={urls} value={url} onChange={setUrl} />
-        <BoxList api={api} options={OPTIONS} />
+        <BoxList api={api} options={OPTIONS} onReport={handleReport} />
       </div>
     </Spin>
   );
