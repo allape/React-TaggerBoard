@@ -1,30 +1,13 @@
 import { DeleteOutlined } from "@ant-design/icons";
 import { Button, Input, InputNumber, Select, Space } from "antd";
+import cls from "classnames";
 import { ReactElement } from "react";
 import { ILV } from "../../config/antd.ts";
+import { Default, IBox } from "../../model/box.ts";
 import styles from "./style.module.scss";
 
-export interface IBox {
-  id: string;
-  label: string;
-  strokeColor: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-const Default: IBox = {
-  id: "",
-  label: "",
-  strokeColor: "",
-  x: 0,
-  y: 0,
-  width: 0,
-  height: 0,
-};
-
 export interface IBoxFormProps {
+  className?: string;
   options?: ILV<IBox["label"]>[];
   value?: IBox;
   onChange?: (value: IBox) => void;
@@ -33,6 +16,7 @@ export interface IBoxFormProps {
 }
 
 export default function BoxForm({
+  className,
   options,
   value,
   onChange,
@@ -55,12 +39,14 @@ export default function BoxForm({
   };
 
   return (
-    <div className={styles.wrapper}>
+    <div className={cls(styles.wrapper, className)}>
       <Space.Compact data-id={id}>
         <Select
           value={label}
           className={styles.input}
           options={options}
+          showSearch
+          optionFilterProp="keywords"
           onChange={(e) => handleChange("label", e)}
         />
         <Input

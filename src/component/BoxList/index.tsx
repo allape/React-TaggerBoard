@@ -1,11 +1,13 @@
 import { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/types/element/types";
 import { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types/types";
 import { Button, Divider, Empty, Input } from "antd";
+import cls from "classnames";
 import { ReactElement, useCallback, useEffect, useState } from "react";
 import { ImageID } from "../../config";
 import { ILV } from "../../config/antd.ts";
 import { randomColor } from "../../helper/color.ts";
-import BoxForm, { IBox } from "../BoxForm";
+import { fromRectangleElement, IBox } from "../../model/box.ts";
+import BoxForm from "../BoxForm";
 import FloatList from "../FloatList";
 import styles from "./style.module.scss";
 
@@ -22,6 +24,7 @@ export default function BoxList({
 }: IBoxListProps): ReactElement {
   const [strokeColor, _setStrokeColor] = useState<string>("#000000");
   const [boxes, setBoxes] = useState<IBox[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const setStrokeColor = useCallback(
     (color: string) => {
@@ -144,15 +147,7 @@ export default function BoxList({
 
     const boxes: IBox[] = newBoxElements
       .filter((i) => i.type === "rectangle")
-      .map((i) => ({
-        id: i.id,
-        label: i.customData?.label || "",
-        strokeColor: i.strokeColor,
-        x: i.x,
-        y: i.y,
-        width: i.width,
-        height: i.height,
-      }));
+      .map((i) => fromRectangleElement(i as ExcalidrawRectangleElement));
 
     api.updateScene({
       elements: [...nonBoxElements, ...newBoxElements],
@@ -198,17 +193,9 @@ export default function BoxList({
     const dispose = api.onChange((elements, appState) => {
       const boxes: IBox[] = elements
         .filter((i) => i.type === "rectangle" && !i.isDeleted)
-        .map((element) => {
-          return {
-            id: element.id,
-            label: element.customData?.label || "",
-            strokeColor: element.strokeColor,
-            x: element.x,
-            y: element.y,
-            width: element.width,
-            height: element.height,
-          };
-        });
+        .map((element) =>
+          fromRectangleElement(element as ExcalidrawRectangleElement),
+        );
 
       if (lastBoxesCount !== boxes.length) {
         lastBoxesCount = boxes.length;
@@ -218,6 +205,7 @@ export default function BoxList({
       }
 
       setBoxes(boxes);
+      setSelectedIds(Object.keys(appState.selectedElementIds));
     });
 
     return () => {
@@ -252,7 +240,13 @@ export default function BoxList({
       ) : undefined}
       {boxes.map((box) => {
         return (
-          <div key={box.id} className={styles.box}>
+          <div
+            key={box.id}
+            className={cls(
+              styles.box,
+              selectedIds.includes(box.id) ? styles.selected : undefined,
+            )}
+          >
             <BoxForm
               data-boxid={box.id}
               options={options}

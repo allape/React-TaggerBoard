@@ -3,13 +3,15 @@ import {
   convertToExcalidrawElements,
   Excalidraw,
 } from "@excalidraw/excalidraw";
+import { ExcalidrawElementSkeleton } from "@excalidraw/excalidraw/types/data/transform";
 import { FileId } from "@excalidraw/excalidraw/types/element/types";
 import {
   BinaryFileData,
   ExcalidrawImperativeAPI,
 } from "@excalidraw/excalidraw/types/types";
-import { Spin } from "antd";
+import { Modal, Spin } from "antd";
 import cls from "classnames";
+import { nanoid } from "nanoid";
 import {
   CSSProperties,
   ReactElement,
@@ -17,35 +19,34 @@ import {
   useEffect,
   useState,
 } from "react";
-import { IBox } from "./component/BoxForm";
 import BoxList from "./component/BoxList";
 import ImageQueue from "./component/ImageQueue";
 import { BorderID, ImageID } from "./config";
 import { ILV } from "./config/antd.ts";
 import { randomColor } from "./helper/color.ts";
+import { getSize } from "./helper/image.ts";
 import { sha256ToHex } from "./helper/sha256.ts";
 import useColorScheme from "./hook/useColorScheme.ts";
-import { getSize } from "./helper/image.ts";
+import { IBox } from "./model/box.ts";
 import styles from "./style.module.scss";
 
-const OPTIONS: ILV<string>[] = [
-  {
-    label: "Person",
-    value: "0",
-  },
-];
+export type PredicatedBox = Omit<IBox, "strokeColor" | "id">;
 
 export interface IAppProps {
   className?: string;
   style?: CSSProperties;
   urls?: string[];
+  classes: ILV<string>[];
   onReport?: (url: string, boxes: IBox[]) => Promise<void> | void;
+  predicate?: (file: Blob) => Promise<PredicatedBox[]>;
 }
 
 export default function App({
   className,
   style,
   urls: urlsFromProps,
+  classes,
+  predicate,
   onReport,
 }: IAppProps): ReactElement {
   const { loading, execute } = useLoading();
@@ -78,6 +79,17 @@ export default function App({
           file = url;
         }
 
+        let boxes: PredicatedBox[] = [];
+        try {
+          boxes = (await predicate?.(file)) || [];
+        } catch (e) {
+          Modal.error({
+            title: "Error",
+            content: (e as Error).message,
+          });
+          console.error(e);
+        }
+
         const dataURL = URL.createObjectURL(file);
         const [width, height] = await getSize(dataURL);
 
@@ -92,6 +104,10 @@ export default function App({
         ]);
 
         const borderWidth = 10;
+
+        let strokeWidth = (width > height ? height : width) * 0.01;
+        strokeWidth = strokeWidth < 2 ? 2 : strokeWidth;
+        strokeWidth = strokeWidth > 10 ? 10 : strokeWidth;
 
         const elements = convertToExcalidrawElements(
           [
@@ -113,18 +129,6 @@ export default function App({
                 [-borderWidth, -borderWidth],
               ],
             },
-            // {
-            //   id: "RectPreset",
-            //   type: "rectangle",
-            //   roughness: 0,
-            //   roundness: null,
-            //   x: 0,
-            //   y: 0,
-            //   width: 1,
-            //   height: 1,
-            //   locked: true,
-            //   opacity: 0,
-            // },
             {
               id: ImageID,
               type: "image",
@@ -135,15 +139,24 @@ export default function App({
               width,
               height,
             },
+            ...boxes.map<ExcalidrawElementSkeleton>((box) => ({
+              id: nanoid(),
+              type: "rectangle",
+              customData: {
+                label: box.label,
+              },
+              x: box.x,
+              y: box.y,
+              width: box.width,
+              height: box.height,
+              strokeColor: randomColor(),
+              strokeWidth,
+            })),
           ],
           {
             regenerateIds: false,
           },
         );
-
-        let strokeWidth = (width > height ? height : width) * 0.01;
-        strokeWidth = strokeWidth < 2 ? 2 : strokeWidth;
-        strokeWidth = strokeWidth > 10 ? 10 : strokeWidth;
 
         api.updateScene({
           elements,
@@ -163,7 +176,7 @@ export default function App({
         api.scrollToContent();
       });
     },
-    [apiRef, execute],
+    [apiRef, execute, predicate],
   );
 
   useEffect(() => {
@@ -232,7 +245,7 @@ export default function App({
           zenModeEnabled
         />
         <ImageQueue urls={urls} value={url} onChange={setUrl} />
-        <BoxList api={api} options={OPTIONS} onReport={handleReport} />
+        <BoxList api={api} options={classes} onReport={handleReport} />
       </div>
     </Spin>
   );

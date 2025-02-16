@@ -1,7 +1,25 @@
 .wrapper {
   .box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+
     &:not(:first-child) {
       margin-top: 10px;
+    }
+
+    &::before {
+      content: '✅';
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    &.selected {
+      &::before {
+        opacity: 1;
+      }
     }
   }
 
