@@ -14,6 +14,7 @@ npm run dev
 - React: https://react.dev/
 - excalidraw: https://github.com/excalidraw/excalidraw
 - Ant Design: https://ant.design/
+- Predicate: https://github.com/ultralytics/ultralytics
 - [favicon.png](public/favicon.png): https://www.irasutoya.com/2018/05/blog-post_69.html
     - Terms(ご利用規定): https://www.irasutoya.com/p/terms.html
 - [girl-7357492_1920.jpg](src/asset/girl-7357492_1920.jpg): https://pixabay.com/photos/girl-woman-crowd-dancer-hip-hop-7357492/
