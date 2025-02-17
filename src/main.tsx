@@ -193,6 +193,13 @@ createRoot(document.getElementById("root")!).render(
       urls={[Image1, Image2]}
       onReport={(url, boxes) => console.log(url, boxes)}
       predicate={async (file): Promise<PredicatedBox[]> => {
+        if (
+          window.location.hostname !== "localhost" &&
+          window.location.hostname !== "127.0.0.1"
+        ) {
+          return [];
+        }
+
         const IYOLORes: IYOLORes = await fetch(
           import.meta.env.VITE_YOLO_SERVER_URL || "http://localhost:8080",
           {
