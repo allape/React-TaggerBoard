@@ -22,11 +22,11 @@ import {
 import BoxList from "./component/BoxList";
 import ImageQueue from "./component/ImageQueue";
 import { BorderID, ImageID } from "./config";
-import { ILV } from "./model/antd.ts";
 import { randomColor } from "./helper/color.ts";
 import { getSize } from "./helper/image.ts";
 import { sha256ToHex } from "./helper/sha256.ts";
 import useColorScheme from "./hook/useColorScheme.ts";
+import { ILV } from "./model/antd.ts";
 import { IBox } from "./model/box.ts";
 import styles from "./style.module.scss";
 
@@ -46,7 +46,7 @@ export interface IAppProps {
     url: string,
     boxes: IBox[],
   ) => Promise<boolean | void> | boolean | void;
-  predicate?: (file: Blob) => Promise<PredicatedBox[]>;
+  predicate?: (url: string, file: Blob) => Promise<PredicatedBox[]>;
 }
 
 export default function App({
@@ -69,7 +69,7 @@ export default function App({
   );
 
   const putImageIntoBoard = useCallback(
-    async (url: string | File, api?: ExcalidrawImperativeAPI) => {
+    async (url: string, api?: ExcalidrawImperativeAPI) => {
       if (!url) {
         return;
       }
@@ -80,16 +80,11 @@ export default function App({
           return;
         }
 
-        let file: Blob;
-        if (typeof url === "string") {
-          file = await fetch(url).then((res) => res.blob());
-        } else {
-          file = url;
-        }
+        const file = await fetch(url).then((res) => res.blob());
 
         let boxes: PredicatedBox[] = [];
         try {
-          boxes = (await predicate?.(file)) || [];
+          boxes = (await predicate?.(url, file)) || [];
         } catch (e) {
           Modal.error({
             title: "Error",
