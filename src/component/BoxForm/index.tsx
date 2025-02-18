@@ -48,12 +48,14 @@ export default function BoxForm({
           showSearch
           optionFilterProp="keywords"
           onChange={(e) => handleChange("label", e)}
+          onFocus={onFocus}
         />
         <Input
           type="color"
           className={styles.color}
           value={strokeColor}
           onChange={(e) => handleChange("strokeColor", e.target.value)}
+          onFocus={onFocus}
         />
         <InputNumber
           className={styles.number}

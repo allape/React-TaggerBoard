@@ -3,9 +3,26 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
 
   .image {
     cursor: pointer;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    transition: 0.1s;
+    overflow: hidden;
+    flex: 1 0 64px;
+    border: 4px solid transparent;
+
+    & > img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    &.selected {
+      border-radius: 0;
+      border-color: lightgray;
+    }
   }
 }
