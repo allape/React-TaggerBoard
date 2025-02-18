@@ -1,4 +1,4 @@
-# docker run --rm -it -v "$(pwd)/predictor.py:/ultralytics/predictor.py" ultralytics/ultralytics:8.3.75-arm64 bash
+# docker run --rm -it -p 8080:8080 -v "$(pwd)/predictor.py:/ultralytics/predictor.py" ultralytics/ultralytics:8.3.75-arm64 bash
 # python predictor.py
 
 import http.server
@@ -7,6 +7,7 @@ import json
 import numpy as np
 import socketserver
 import torch
+import torch.nn.functional as F
 from PIL import Image
 from ultralytics import YOLO
 
@@ -16,20 +17,21 @@ model = YOLO("yolo11n.pt")
 # model("./bus.jpg") # hot start
 
 def image_binary_to_bchw_tensor(image_binary):
-    # Convert binary data to a PIL Image
     image = Image.open(io.BytesIO(image_binary))
-
-    # Convert the PIL Image to a NumPy array
     np_array = np.array(image)
-
-    # Convert the NumPy array to a PyTorch tensor
     tensor = torch.from_numpy(np_array).float()
 
-    # Add batch dimension (B) and channel dimension (C)
     if len(tensor.shape) == 2:  # Grayscale image
         tensor = tensor.unsqueeze(0).unsqueeze(0)
-    else:  # RGB image
+    else:
+        if tensor.shape[2] == 4:  # RGBA image
+            tensor = tensor[:, :, :3]
         tensor = tensor.permute(2, 0, 1).unsqueeze(0)
+
+    _, _, h, w = tensor.shape
+    pad_h = (32 - h % 32) % 32
+    pad_w = (32 - w % 32) % 32
+    tensor = F.pad(tensor, (0, pad_w, 0, pad_h), mode='constant', value=0)
 
     return tensor
 
