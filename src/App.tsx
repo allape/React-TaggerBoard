@@ -37,7 +37,15 @@ export interface IAppProps {
   style?: CSSProperties;
   urls?: string[];
   classes: ILV<string>[];
-  onReport?: (url: string, boxes: IBox[]) => Promise<void> | void;
+  /**
+   * return false or promised false to stop annotation
+   * @param url
+   * @param boxes
+   */
+  onReport?: (
+    url: string,
+    boxes: IBox[],
+  ) => Promise<boolean | void> | boolean | void;
   predicate?: (file: Blob) => Promise<PredicatedBox[]>;
 }
 
@@ -223,13 +231,18 @@ export default function App({
         return;
       }
       execute(async () => {
-        await onReport?.(url, boxes);
-        const urls = urlsRef.current.filter((u) => u !== url);
-        setUrls(urls);
-        setUrl(urls[0]);
+        const res = await onReport?.(url, boxes);
+        if (res === false) {
+          return;
+        }
+        let nextIndex = urlsRef.current.indexOf(url) + 1;
+        if (nextIndex >= urlsRef.current.length) {
+          nextIndex = 0;
+        }
+        setUrl(urlsRef.current[nextIndex]);
       }).then();
     },
-    [execute, onReport, setUrl, setUrls, urlRef, urlsRef],
+    [execute, onReport, setUrl, urlRef, urlsRef],
   );
 
   return (
