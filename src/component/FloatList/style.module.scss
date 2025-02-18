@@ -1,8 +1,8 @@
 $margin: 16px;
 
 .wrapper {
-  position: fixed;
-  max-height: calc(100vh - 80px);
+  position: absolute;
+  max-height: calc(100% - 100px);
   overflow-y: auto;
   top: $margin;
   border-radius: 8px;

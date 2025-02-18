@@ -4,7 +4,7 @@ import { Button, Divider, Empty, Input } from "antd";
 import cls from "classnames";
 import { ReactElement, useCallback, useEffect, useState } from "react";
 import { ImageID } from "../../config";
-import { ILV } from "../../config/antd.ts";
+import { ILV } from "../../model/antd.ts";
 import { randomColor } from "../../helper/color.ts";
 import { fromRectangleElement, IBox } from "../../model/box.ts";
 import BoxForm from "../BoxForm";

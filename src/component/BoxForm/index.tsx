@@ -2,7 +2,7 @@ import { DeleteOutlined } from "@ant-design/icons";
 import { Button, Input, InputNumber, Select, Space } from "antd";
 import cls from "classnames";
 import { ReactElement } from "react";
-import { ILV } from "../../config/antd.ts";
+import { ILV } from "../../model/antd.ts";
 import { Default, IBox } from "../../model/box.ts";
 import styles from "./style.module.scss";
 
@@ -42,8 +42,8 @@ export default function BoxForm({
     <div className={cls(styles.wrapper, className)}>
       <Space.Compact data-id={id}>
         <Select
-          value={label}
           className={styles.input}
+          value={label}
           options={options}
           showSearch
           optionFilterProp="keywords"
@@ -51,11 +51,12 @@ export default function BoxForm({
         />
         <Input
           type="color"
-          className={styles.input}
+          className={styles.color}
           value={strokeColor}
           onChange={(e) => handleChange("strokeColor", e.target.value)}
         />
         <InputNumber
+          className={styles.number}
           value={x}
           onChange={(e) => handleChange("x", e)}
           step={1}
@@ -63,6 +64,7 @@ export default function BoxForm({
           onFocus={onFocus}
         />
         <InputNumber
+          className={styles.number}
           value={y}
           onChange={(e) => handleChange("y", e)}
           step={1}
@@ -70,6 +72,7 @@ export default function BoxForm({
           onFocus={onFocus}
         />
         <InputNumber
+          className={styles.number}
           value={width}
           onChange={(e) => handleChange("width", e)}
           step={1}
@@ -77,6 +80,7 @@ export default function BoxForm({
           onFocus={onFocus}
         />
         <InputNumber
+          className={styles.number}
           value={height}
           onChange={(e) => handleChange("height", e)}
           step={1}

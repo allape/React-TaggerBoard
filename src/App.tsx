@@ -22,7 +22,7 @@ import {
 import BoxList from "./component/BoxList";
 import ImageQueue from "./component/ImageQueue";
 import { BorderID, ImageID } from "./config";
-import { ILV } from "./config/antd.ts";
+import { ILV } from "./model/antd.ts";
 import { randomColor } from "./helper/color.ts";
 import { getSize } from "./helper/image.ts";
 import { sha256ToHex } from "./helper/sha256.ts";

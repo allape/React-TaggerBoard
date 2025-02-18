@@ -4,7 +4,7 @@ import "./index.scss";
 import App, { PredicatedBox } from "./App.tsx";
 import Image1 from "./asset/girl-5014099_1920.jpg";
 import Image2 from "./asset/girl-7357492_1920.jpg";
-import { ILV } from "./config/antd.ts";
+import { ILV } from "./model/antd.ts";
 
 const Classes: ILV<string>[] = [
   { label: "Person", value: "0" },
