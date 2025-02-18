@@ -51,6 +51,7 @@ export default function BoxForm({
           onFocus={onFocus}
         />
         <Input
+          tabIndex={-1}
           type="color"
           className={styles.color}
           value={strokeColor}
@@ -58,6 +59,7 @@ export default function BoxForm({
           onFocus={onFocus}
         />
         <InputNumber
+          tabIndex={-1}
           className={styles.number}
           value={x}
           onChange={(e) => handleChange("x", e)}
@@ -66,6 +68,7 @@ export default function BoxForm({
           onFocus={onFocus}
         />
         <InputNumber
+          tabIndex={-1}
           className={styles.number}
           value={y}
           onChange={(e) => handleChange("y", e)}
@@ -74,6 +77,7 @@ export default function BoxForm({
           onFocus={onFocus}
         />
         <InputNumber
+          tabIndex={-1}
           className={styles.number}
           value={width}
           onChange={(e) => handleChange("width", e)}
@@ -82,6 +86,7 @@ export default function BoxForm({
           onFocus={onFocus}
         />
         <InputNumber
+          tabIndex={-1}
           className={styles.number}
           value={height}
           onChange={(e) => handleChange("height", e)}
@@ -89,7 +94,7 @@ export default function BoxForm({
           precision={0}
           onFocus={onFocus}
         />
-        <Button danger onClick={onDelete}>
+        <Button tabIndex={-1} danger onClick={onDelete}>
           <DeleteOutlined />
         </Button>
       </Space.Compact>
