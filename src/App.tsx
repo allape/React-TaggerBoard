@@ -80,6 +80,13 @@ export default function App({
           return;
         }
 
+        // destroy old files
+        Object.entries(api.getFiles()).forEach(([, file]) => {
+          if (file.dataURL.startsWith("blob:")) {
+            URL.revokeObjectURL(file.dataURL);
+          }
+        });
+
         const file = await fetch(url).then((res) => res.blob());
 
         let boxes: PredicatedBox[] = [];
