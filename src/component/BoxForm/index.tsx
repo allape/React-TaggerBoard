@@ -13,6 +13,7 @@ export interface IBoxFormProps {
   onChange?: (value: IBox) => void;
   onFocus?: () => void;
   onDelete?: () => void;
+  onLabelSelectDropdownVisibleChange?: (visible: boolean) => void;
 }
 
 export default function BoxForm({
@@ -22,6 +23,7 @@ export default function BoxForm({
   onChange,
   onFocus,
   onDelete,
+  onLabelSelectDropdownVisibleChange,
 }: IBoxFormProps): ReactElement {
   const { id, label, strokeColor, x, y, width, height } = value || Default;
 
@@ -42,6 +44,7 @@ export default function BoxForm({
     <div className={cls(styles.wrapper, className)}>
       <Space.Compact data-id={id}>
         <Select
+          data-rtb-select-id="label"
           className={styles.input}
           value={label}
           options={options}
@@ -49,6 +52,7 @@ export default function BoxForm({
           optionFilterProp="keywords"
           onChange={(e) => handleChange("label", e)}
           onFocus={onFocus}
+          onDropdownVisibleChange={onLabelSelectDropdownVisibleChange}
         />
         <Input
           tabIndex={-1}

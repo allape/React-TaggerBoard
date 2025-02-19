@@ -1,5 +1,10 @@
 import cls from "classnames";
-import { PropsWithChildren, ReactElement } from "react";
+import {
+  ForwardedRef,
+  forwardRef,
+  PropsWithChildren,
+  ReactElement,
+} from "react";
 import styles from "./style.module.scss";
 
 export interface IFloatListProps {
@@ -7,14 +12,19 @@ export interface IFloatListProps {
   position?: "left" | "right";
 }
 
-export default function FloatList({
-  children,
-  className,
-  position = "left",
-}: PropsWithChildren<IFloatListProps>): ReactElement {
+export function FloatList(
+  {
+    children,
+    className,
+    position = "left",
+  }: PropsWithChildren<IFloatListProps>,
+  ref: ForwardedRef<HTMLDivElement | null>,
+): ReactElement {
   return (
-    <div className={cls(styles.wrapper, styles[position], className)}>
+    <div ref={ref} className={cls(styles.wrapper, styles[position], className)}>
       {children}
     </div>
   );
 }
+
+export default forwardRef(FloatList);

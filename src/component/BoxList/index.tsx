@@ -2,10 +2,10 @@ import { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/types/element
 import { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types/types";
 import { Button, Divider, Empty, Input } from "antd";
 import cls from "classnames";
-import { ReactElement, useCallback, useEffect, useState } from "react";
+import { ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { ImageID } from "../../config";
-import { ILV } from "../../model/antd.ts";
 import { randomColor } from "../../helper/color.ts";
+import { ILV } from "../../model/antd.ts";
 import { fromRectangleElement, IBox } from "../../model/box.ts";
 import BoxForm from "../BoxForm";
 import FloatList from "../FloatList";
@@ -22,6 +22,9 @@ export default function BoxList({
   options,
   onReport,
 }: IBoxListProps): ReactElement {
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const autoTabTimerRef = useRef<number>(-1);
+
   const [strokeColor, _setStrokeColor] = useState<string>("#000000");
   const [boxes, setBoxes] = useState<IBox[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -218,8 +221,35 @@ export default function BoxList({
     onReport?.(boxes);
   }, [handleNormalize, onReport]);
 
+  const handleLabelSelectDropdownVisibleChange = useCallback(
+    (visible: boolean) => {
+      if (visible || !wrapperRef.current) {
+        return;
+      }
+
+      const inputs = Array.from(
+        wrapperRef.current.querySelectorAll("[data-rtb-select-id=label] input"),
+      ) as HTMLInputElement[];
+      const current = inputs.findIndex((i) => document.activeElement === i);
+
+      if (current === -1 || current === inputs.length - 1) {
+        const reportButton = wrapperRef.current.querySelector(
+          "[data-rtb-button-id=report]",
+        ) as HTMLButtonElement | null;
+        reportButton?.focus?.();
+        return;
+      }
+
+      clearTimeout(autoTabTimerRef.current);
+      autoTabTimerRef.current = setTimeout(() => {
+        inputs[current + 1].focus();
+      }, 100) as unknown as number;
+    },
+    [],
+  );
+
   return (
-    <FloatList className={styles.wrapper} position="right">
+    <FloatList ref={wrapperRef} className={styles.wrapper} position="right">
       <div className={styles.flex}>
         <Input
           className={styles.colorPicker}
@@ -227,10 +257,18 @@ export default function BoxList({
           value={strokeColor}
           onChange={(e) => setStrokeColor(e.target.value)}
         />
-        <Button onClick={handleNormalize} disabled={boxes.length === 0}>
+        <Button
+          data-rtb-button-id="normalize"
+          onClick={handleNormalize}
+          disabled={boxes.length === 0}
+        >
           Normalize
         </Button>
-        <Button type="primary" onClick={handleReport}>
+        <Button
+          type="primary"
+          data-rtb-button-id="report"
+          onClick={handleReport}
+        >
           Report
         </Button>
       </div>
@@ -254,6 +292,9 @@ export default function BoxList({
               onChange={(v) => handleChange(box.id, v)}
               onFocus={() => handleFocus(box.id)}
               onDelete={() => handleDelete(box.id)}
+              onLabelSelectDropdownVisibleChange={
+                handleLabelSelectDropdownVisibleChange
+              }
             />
           </div>
         );
