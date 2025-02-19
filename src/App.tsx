@@ -33,6 +33,8 @@ import styles from "./style.module.scss";
 export type PredicatedBox = Omit<IBox, "strokeColor" | "id">;
 
 export interface IAppProps {
+  id?: string;
+  floatCardClassName?: string;
   className?: string;
   style?: CSSProperties;
   urls?: string[];
@@ -50,6 +52,8 @@ export interface IAppProps {
 }
 
 export default function App({
+  id,
+  floatCardClassName,
   className,
   style,
   urls: urlsFromProps,
@@ -251,6 +255,7 @@ export default function App({
     <Spin spinning={loading}>
       <div
         ref={setWrapper}
+        id={id}
         className={cls(styles.wrapper, className)}
         style={style}
       >
@@ -259,8 +264,18 @@ export default function App({
           theme={isDark ? "dark" : "light"}
           zenModeEnabled
         />
-        <ImageQueue urls={urls} value={url} onChange={setUrl} />
-        <BoxList api={api} options={classes} onReport={handleReport} />
+        <ImageQueue
+          className={floatCardClassName}
+          urls={urls}
+          value={url}
+          onChange={setUrl}
+        />
+        <BoxList
+          className={floatCardClassName}
+          api={api}
+          options={classes}
+          onReport={handleReport}
+        />
       </div>
     </Spin>
   );

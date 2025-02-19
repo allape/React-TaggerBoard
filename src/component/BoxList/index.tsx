@@ -12,12 +12,14 @@ import FloatList from "../FloatList";
 import styles from "./style.module.scss";
 
 export interface IBoxListProps {
+  className?: string;
   api?: ExcalidrawImperativeAPI;
   options: ILV<IBox["label"]>[];
   onReport?: (boxes: IBox[]) => void;
 }
 
 export default function BoxList({
+  className,
   api,
   options,
   onReport,
@@ -249,7 +251,11 @@ export default function BoxList({
   );
 
   return (
-    <FloatList ref={wrapperRef} className={styles.wrapper} position="right">
+    <FloatList
+      ref={wrapperRef}
+      className={cls(styles.wrapper, className)}
+      position="right"
+    >
       <div className={styles.flex}>
         <Input
           className={styles.colorPicker}
