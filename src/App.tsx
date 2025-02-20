@@ -91,7 +91,8 @@ export default function App({
           }
         });
 
-        api.resetScene();
+        // api.resetScene();
+        api.history.clear();
 
         const file = await fetch(url).then((res) => res.blob());
 
