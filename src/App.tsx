@@ -91,6 +91,8 @@ export default function App({
           }
         });
 
+        api.resetScene();
+
         const file = await fetch(url).then((res) => res.blob());
 
         let boxes: PredicatedBox[] = [];
