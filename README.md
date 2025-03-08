@@ -1,8 +1,20 @@
 # React Tagger
 
+Component of Tag/Annotation Tools for images for YOLO(Object Classification)
+
 ## [Playground](https://allape.github.io/React-TaggerBoard/): https://allape.github.io/React-TaggerBoard/
 
-## Dev
+### Installation
+
+```shell
+npm install github:allape/React-TaggerBoard
+```
+
+### Usage
+
+See [main.tsx](src/main.tsx).
+
+### Dev
 
 ```shell
 npm install
